@@ -1,5 +1,6 @@
 package com.sber.democrud.dto;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -55,6 +56,7 @@ public class GoodResponseDto {
     /**
      * Дата архивации товара.
      */
+    @Nullable
     private LocalDateTime archiveDate;
 }
 
