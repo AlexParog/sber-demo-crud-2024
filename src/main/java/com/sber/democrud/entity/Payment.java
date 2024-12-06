@@ -65,7 +65,7 @@ public class Payment {
      * Дата последнего обновления записи о платеже.
      */
     @LastModifiedDate
-    @Column(name = "update_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     /**

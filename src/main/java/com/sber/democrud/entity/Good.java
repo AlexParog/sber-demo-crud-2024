@@ -53,7 +53,7 @@ public class Good {
      * Описание товара.
      */
     @NotBlank
-    @Column(name = "description", nullable = false)
+    @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
 
     /**
@@ -90,7 +90,7 @@ public class Good {
      * Дата последнего обновления записи о товаре.
      */
     @LastModifiedDate
-    @Column(name = "update_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     /**

@@ -96,7 +96,7 @@ public class User {
      * Дата последнего обновления записи о пользователе.
      */
     @LastModifiedDate
-    @Column(name = "update_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     /**
