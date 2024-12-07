@@ -8,6 +8,8 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
 
+import java.util.Set;
+
 /**
  * Маппер для преобразования между сущностью {@link Good} и DTO объектами.
  */
@@ -34,6 +36,11 @@ public interface GoodMapper {
      * @param goodRequestDto DTO с данными для создания товара.
      * @return объект сущности товара.
      */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "archiveDate", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "goodsInPayments", ignore = true)
     Good toGood(GoodRequestDto goodRequestDto);
 
     /**
@@ -42,6 +49,22 @@ public interface GoodMapper {
      * @param goodRequestDto DTO с новыми данными товара.
      * @param good           объект товара, который необходимо обновить.
      */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "archiveDate", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "goodsInPayments", ignore = true)
     void updateGoodFromDto(GoodRequestDto goodRequestDto, @MappingTarget Good good);
+
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "goodsInPayments", ignore = true)
+    Set<GoodResponseDto> toGoodResponseDtos(Set<Good> goods);
+
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "goodsInPayments", ignore = true)
+    Set<Good> toGoods(Set<GoodResponseDto> goodDtos);
+
 }
 
