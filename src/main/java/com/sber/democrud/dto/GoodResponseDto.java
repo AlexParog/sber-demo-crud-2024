@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * DTO для передачи информации о товаре от сервера клиенту.
+ * DTO-ответа для передачи информации о товаре от сервера клиенту.
  */
 @Getter
 @Setter

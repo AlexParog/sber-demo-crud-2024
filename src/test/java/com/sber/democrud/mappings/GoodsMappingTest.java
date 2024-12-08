@@ -18,11 +18,34 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Тестовый класс для проверки маппинга между сущностью {@link Good},
+ * объектами DTO ({@link GoodRequestDto} и {@link GoodResponseDto}), а также коллекциями этих объектов.
+ * <p>
+ * Тестируются следующие сценарии:
+ * <ul>
+ *     <li>Маппинг сущности {@link Good} в {@link GoodResponseDto}</li>
+ *     <li>Маппинг {@link GoodRequestDto} в сущность {@link Good}</li>
+ *     <li>Обновление существующей сущности {@link Good} из DTO {@link GoodRequestDto}</li>
+ *     <li>Маппинг коллекций сущностей в коллекции DTO и наоборот</li>
+ * </ul>
+ */
 @SpringBootTest
 public class GoodsMappingTest {
+
+    /**
+     * Автоматически внедряемый бин маппера {@link GoodMapper}.
+     * Используется для проведения маппинга между сущностями {@link Good} и DTO.
+     */
     @Autowired
     private GoodMapper goodMapper;
 
+    /**
+     * Тестирует маппинг сущности {@link Good} в DTO {@link GoodResponseDto}.
+     * <p>
+     * Проверяет корректность заполнения обязательных полей, а также их соответствие
+     * данным исходной сущности.
+     */
     @Test
     void goodToGoodResponseDtoTest() {
         Good good = getGood();
@@ -30,7 +53,8 @@ public class GoodsMappingTest {
         GoodResponseDto goodResponseDto = goodMapper.toGoodResponseDto(good);
 
         assertThat(goodResponseDto).isNotNull();
-        // обязательные поля при маппинге
+
+        // Проверка обязательных полей при маппинге
         assertThat(goodResponseDto.getId()).isEqualTo(good.getId());
         assertThat(goodResponseDto.getName()).isEqualTo(good.getName());
         assertThat(goodResponseDto.getType()).isEqualTo(good.getType().getValue());
@@ -40,6 +64,12 @@ public class GoodsMappingTest {
         assertThat(goodResponseDto.getArchiveDate()).isEqualTo(good.getArchiveDate());
     }
 
+    /**
+     * Тестирует маппинг DTO {@link GoodRequestDto} в сущность {@link Good}.
+     * <p>
+     * Проверяет корректность переноса обязательных полей, а также игнорирование тех
+     * полей, которые не должны быть заполнены на основе DTO.
+     */
     @Test
     void goodRequestDtoToGoodTest() {
         GoodRequestDto goodRequestDto = getGoodRequestDto();
@@ -47,20 +77,28 @@ public class GoodsMappingTest {
         Good good = goodMapper.toGood(goodRequestDto);
 
         assertThat(good).isNotNull();
-        // обязательные поля
+
+        // Проверяем обязательные поля
         assertThat(good.getName()).isEqualTo(goodRequestDto.getName());
         assertThat(good.getType()).isEqualTo(GoodTypesEnum.valueOf(goodRequestDto.getType()));
         assertThat(good.getDescription()).isEqualTo(goodRequestDto.getDescription());
         assertThat(good.getPrice()).isEqualTo(goodRequestDto.getPrice());
         assertThat(good.getStockQuantity()).isEqualTo(goodRequestDto.getStockQuantity());
         assertThat(good.getArchiveDate()).isEqualTo(goodRequestDto.getArchiveDate());
-        // игнорируемые поля
+
+        // Проверка игнорируемых полей
         assertThat(good.getId()).isNull();
         assertThat(good.getCreatedAt()).isNull();
         assertThat(good.getUpdatedAt()).isNull();
         assertThat(good.getGoodsInPayments()).isEmpty();
     }
 
+    /**
+     * Тестирует обновление существующей сущности {@link Good} данными из DTO {@link GoodRequestDto}.
+     * <p>
+     * Проверяет, что поля обновляются корректно, при этом поля, которые
+     * не должны изменяться, остаются нетронутыми.
+     */
     @Test
     void updateGoodFromGoodRequestDtoTest() {
         Good good = getGood();
@@ -69,35 +107,41 @@ public class GoodsMappingTest {
         goodMapper.updateGoodFromDto(goodRequestDto, good);
 
         assertThat(good).isNotNull();
-        // обязательные поля, которые мы меняем
+
+        // Проверка обязательных полей, которые обновляются
         assertThat(good.getName()).isEqualTo(goodRequestDto.getName());
         assertThat(good.getType()).isEqualTo(GoodTypesEnum.valueOf(goodRequestDto.getType()));
         assertThat(good.getDescription()).isEqualTo(goodRequestDto.getDescription());
         assertThat(good.getPrice()).isEqualTo(goodRequestDto.getPrice());
         assertThat(good.getStockQuantity()).isEqualTo(goodRequestDto.getStockQuantity());
         assertThat(good.getArchiveDate()).isEqualTo(goodRequestDto.getArchiveDate());
-        // поля, которые были заполнены до маппинга
+
+        // Проверка неизменных полей
         assertThat(good.getId()).isNotNull();
-        // игнорируемые поля
+
+        // Проверка игнорируемых полей
         assertThat(good.getCreatedAt()).isNull();
         assertThat(good.getUpdatedAt()).isNull();
         assertThat(good.getGoodsInPayments()).isEmpty();
     }
 
+    /**
+     * Тестирует маппинг коллекции сущностей {@link Good} в коллекцию DTO {@link GoodResponseDto}.
+     * <p>
+     * Проверяет, что все сущности корректно преобразуются и соответствуют исходным данным.
+     */
     @Test
     void setGoodsToGoodResponseDtosTest() {
         Set<Good> goods = getSetGoods();
 
         Set<GoodResponseDto> goodResponseDtos = goodMapper.toGoodResponseDtos(goods);
 
-        // мапа для быстрого поиска Good по id
         Map<Long, Good> goodMap = goods.stream()
                 .collect(Collectors.toMap(Good::getId, Function.identity()));
 
         for (GoodResponseDto dto : goodResponseDtos) {
             assertThat(dto).isNotNull();
 
-            // Находим соответствующий Good по id
             Good good = goodMap.get(dto.getId());
             assertThat(good).isNotNull();
 
@@ -112,6 +156,11 @@ public class GoodsMappingTest {
         }
     }
 
+    /**
+     * Тестирует маппинг коллекции DTO {@link GoodResponseDto} в коллекцию сущностей {@link Good}.
+     * <p>
+     * Проверяет, что все DTO корректно преобразуются и данные соответствуют исходным.
+     */
     @Test
     void setGoodResponseDtosToGoodsTest() {
         Set<GoodResponseDto> goodResponseDtos = getSetGoodResponseDtos();
@@ -124,11 +173,10 @@ public class GoodsMappingTest {
         for (Good good : goods) {
             assertThat(good).isNotNull();
 
-            // Находим соответствующую DTO по id
             GoodResponseDto dto = dtosMap.get(good.getId());
             assertThat(dto).isNotNull();
 
-            // Проверяем обязательные поля после маппинга
+            // Проверяем корректность маппинга
             assertThat(good.getId()).isEqualTo(dto.getId());
             assertThat(good.getName()).isEqualTo(dto.getName());
             assertThat(good.getType()).isEqualTo(GoodTypesEnum.valueOf(dto.getType()));
@@ -137,13 +185,16 @@ public class GoodsMappingTest {
             assertThat(good.getStockQuantity()).isEqualTo(dto.getStockQuantity());
             assertThat(good.getArchiveDate()).isEqualTo(dto.getArchiveDate());
         }
-
     }
 
+    /**
+     * Создаёт тестовую коллекцию сущностей {@link Good}.
+     *
+     * @return коллекция объектов {@link Good}.
+     */
     protected static Set<Good> getSetGoods() {
         Set<Good> goods = new HashSet<>();
 
-        // Пример заполнения множества
         Good good1 = getGood();
         Good good2 = new Good();
         good2.setId(2L);
@@ -160,10 +211,14 @@ public class GoodsMappingTest {
         return goods;
     }
 
+    /**
+     * Создаёт тестовую коллекцию DTO {@link GoodResponseDto}.
+     *
+     * @return коллекция объектов {@link GoodResponseDto}.
+     */
     protected static Set<GoodResponseDto> getSetGoodResponseDtos() {
         Set<GoodResponseDto> goodResponseDtos = new HashSet<>();
 
-        // Пример заполнения множества
         GoodResponseDto dto1 = new GoodResponseDto();
         dto1.setId(1L);
         dto1.setName("Product");
@@ -188,7 +243,11 @@ public class GoodsMappingTest {
         return goodResponseDtos;
     }
 
-
+    /**
+     * Создаёт тестовую сущность {@link Good}.
+     *
+     * @return объект {@link Good} с заполненными тестовыми данными.
+     */
     protected static Good getGood() {
         Good good = new Good();
         good.setId(1L);
@@ -201,6 +260,11 @@ public class GoodsMappingTest {
         return good;
     }
 
+    /**
+     * Создаёт тестовый объект DTO {@link GoodRequestDto}.
+     *
+     * @return объект {@link GoodRequestDto} с заполненными тестовыми данными.
+     */
     protected static GoodRequestDto getGoodRequestDto() {
         GoodRequestDto goodRequestDto = new GoodRequestDto();
         goodRequestDto.setName("Book");

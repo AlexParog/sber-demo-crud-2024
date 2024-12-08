@@ -55,11 +55,21 @@ public interface GoodMapper {
     @Mapping(target = "goodsInPayments", ignore = true)
     void updateGoodFromDto(GoodRequestDto goodRequestDto, @MappingTarget Good good);
 
+    /**
+     * Преобразует коллекцию объектов {@link GoodResponseDto} на основе данных из коллекции {@link Good}.
+     *
+     * @param goods множество товаров.
+     */
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "goodsInPayments", ignore = true)
     Set<GoodResponseDto> toGoodResponseDtos(Set<Good> goods);
 
+    /**
+     * Преобразует коллекцию объектов {@link Good} на основе данных из коллекции {@link GoodResponseDto}.
+     *
+     * @param goodDtos множество dto товаров.
+     */
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "goodsInPayments", ignore = true)

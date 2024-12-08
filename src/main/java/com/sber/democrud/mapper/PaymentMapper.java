@@ -8,6 +8,9 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
 
+/**
+ * Маппер для преобразования между сущностью {@link Payment} и DTO объектами.
+ */
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = {GoodMapper.class})
 public interface PaymentMapper {
     /**

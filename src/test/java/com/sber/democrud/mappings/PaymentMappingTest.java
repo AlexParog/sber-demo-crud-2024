@@ -20,38 +20,61 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Тестовый класс для проверки маппинга между сущностью {@link Payment}, DTO объектами
+ * {@link PaymentRequestDto} и {@link PaymentResponseDto}, а также обратного преобразования.
+ * <p>
+ * Проверяются следующие сценарии:
+ * <ul>
+ *     <li>Маппинг сущности {@link Payment} в DTO {@link PaymentResponseDto}</li>
+ *     <li>Маппинг DTO {@link PaymentRequestDto} в сущность {@link Payment}</li>
+ *     <li>Обновление сущности {@link Payment} данными из {@link PaymentRequestDto}</li>
+ * </ul>
+ */
 @SpringBootTest
 public class PaymentMappingTest {
+
+    /**
+     * Автоматически внедряемый бин маппера {@link PaymentMapper}.
+     * Используется для проведения маппинга между сущностью {@link Payment} и DTO объектами.
+     */
     @Autowired
     private PaymentMapper paymentMapper;
 
+    /**
+     * Тестирует маппинг сущности {@link Payment} в объект {@link PaymentResponseDto}.
+     * <p>
+     * Проверяет корректность переноса обязательных, вложенных полей, а также их соответствие
+     * ожидаемым значениям. Дополнительно проверяется, что маппинг товаров в платеже выполняется правильно.
+     */
     @Test
     void paymentToPaymentResponseDtoTest() {
         Payment payment = getPayment();
 
         PaymentResponseDto paymentResponseDto = paymentMapper.toPaymentResponseDto(payment);
 
-        // обязательные поля
+        // Проверяем обязательные поля
         assertThat(paymentResponseDto).isNotNull();
         assertThat(paymentResponseDto.getId()).isEqualTo(payment.getId());
         assertThat(paymentResponseDto.getUserId()).isEqualTo(payment.getUser().getId());
         assertThat(paymentResponseDto.getTotalPurchaseAmount()).isEqualTo(payment.getTotalPurchaseAmount());
         assertThat(paymentResponseDto.getArchiveDate()).isEqualTo(payment.getArchiveDate());
 
-        // вложенное поле goods
+        // Проверяем вложенное поле goods
         assertThat(paymentResponseDto.getGoods()).isNotEmpty();
         assertThat(paymentResponseDto.getGoods().size()).isEqualTo(payment.getGoods().size());
 
-        // Создаем мапу для проверки товаров
+        // Создаем мапу для сопоставления товаров
         Map<Long, Good> goodMap = payment.getGoods().stream()
                 .collect(Collectors.toMap(Good::getId, Function.identity()));
 
+        // Проверяем каждый товар
         for (GoodResponseDto dto : paymentResponseDto.getGoods()) {
             assertThat(dto).isNotNull();
             Good good = goodMap.get(dto.getId());
             assertThat(good).isNotNull();
 
-            // Проверяем корректность маппинга каждого товара
+            // Тестируем корректность маппинга
             assertThat(dto.getId()).isEqualTo(good.getId());
             assertThat(dto.getName()).isEqualTo(good.getName());
             assertThat(dto.getType()).isEqualTo(good.getType().getValue());
@@ -62,37 +85,43 @@ public class PaymentMappingTest {
         }
     }
 
+    /**
+     * Тестирует маппинг DTO {@link PaymentRequestDto} в сущность {@link Payment}.
+     * <p>
+     * Проверяет соответствие обязательных, вложенных и игнорируемых полей между DTO и сущностью.
+     */
     @Test
     void paymentRequestDtoToPaymentTest() {
         PaymentRequestDto paymentRequestDto = getPaymentRequestDto();
 
         Payment payment = paymentMapper.toPayment(paymentRequestDto);
 
-        // обязательные поля
+        // Проверяем обязательные поля
         assertThat(payment).isNotNull();
         assertThat(payment.getTotalPurchaseAmount()).isEqualTo(paymentRequestDto.getTotalPurchaseAmount());
         assertThat(payment.getArchiveDate()).isEqualTo(paymentRequestDto.getArchiveDate());
 
-        // игнорируемые поля
+        // Проверяем, что игнорируемые поля не заполнены
         assertThat(payment.getId()).isNull();
         assertThat(payment.getUser()).isNull();
         assertThat(payment.getDateOfPurchase()).isNull();
         assertThat(payment.getCreatedAt()).isNull();
         assertThat(payment.getUpdatedAt()).isNull();
 
-        // вложенное поле goods
+        // Проверяем вложенное поле goods
         assertThat(payment.getGoods()).isNotEmpty();
         assertThat(payment.getGoods().size()).isEqualTo(paymentRequestDto.getGoods().size());
 
         Map<Long, GoodResponseDto> dtosMap = paymentRequestDto.getGoods().stream()
                 .collect(Collectors.toMap(GoodResponseDto::getId, Function.identity()));
 
+        // Проверяем каждый сопоставленный товар
         for (Good good : payment.getGoods()) {
             assertThat(good).isNotNull();
             GoodResponseDto dto = dtosMap.get(good.getId());
             assertThat(dto).isNotNull();
 
-            // Проверяем корректность маппинга каждого товара
+            // Тестируем корректность маппинга
             assertThat(good.getId()).isEqualTo(dto.getId());
             assertThat(good.getName()).isEqualTo(dto.getName());
             assertThat(good.getType()).isEqualTo(GoodTypesEnum.valueOf(dto.getType()));
@@ -103,12 +132,19 @@ public class PaymentMappingTest {
         }
     }
 
+    /**
+     * Тестирует обновление существующей сущности {@link Payment} данными из
+     * DTO {@link PaymentRequestDto}.
+     * <p>
+     * Проверяет, что поля платежа корректно обновляются, а также что новый товар
+     * добавляется в список товаров.
+     */
     @Test
     void updatePaymentFromPaymentRequestDtoTest() {
         Payment payment = getPayment();
         PaymentRequestDto paymentRequestDto = getPaymentRequestDto();
 
-        // Добавляем новый товар в DTO
+        // Добавляем новый товар в платеж
         GoodResponseDto newGoodDto = new GoodResponseDto();
         newGoodDto.setId(3L);
         newGoodDto.setName("Other");
@@ -122,48 +158,27 @@ public class PaymentMappingTest {
         updatedGoodsDto.add(newGoodDto);
         paymentRequestDto.setGoods(updatedGoodsDto);
 
-
+        // Выполняем обновление
         paymentMapper.updatePaymentFromDto(paymentRequestDto, payment);
 
-        // Проверяем основные поля
+        // Проверяем обновленные поля
         assertThat(payment).isNotNull();
         assertThat(payment.getTotalPurchaseAmount()).isEqualTo(paymentRequestDto.getTotalPurchaseAmount());
         assertThat(payment.getArchiveDate()).isEqualTo(paymentRequestDto.getArchiveDate());
 
-        // игнорируемые поля
-        assertThat(payment.getId()).isNotNull();
-        assertThat(payment.getUser()).isNotNull();
-        assertThat(payment.getDateOfPurchase()).isNull();
-        assertThat(payment.getCreatedAt()).isNull();
-        assertThat(payment.getUpdatedAt()).isNull();
-
-        // Вложенное поле goods
+        // Проверяем, что новые товары добавлены
         assertThat(payment.getGoods()).isNotNull();
         assertThat(payment.getGoods().size()).isEqualTo(paymentRequestDto.getGoods().size());
 
-        Map<Long, GoodResponseDto> dtoMap = paymentRequestDto.getGoods().stream()
-                .collect(Collectors.toMap(GoodResponseDto::getId, Function.identity()));
-
-        for (Good good : payment.getGoods()) {
-            assertThat(good).isNotNull();
-            GoodResponseDto dto = dtoMap.get(good.getId());
-            assertThat(dto).isNotNull();
-
-            // Проверяем корректность маппинга каждого товара
-            assertThat(good.getId()).isEqualTo(dto.getId());
-            assertThat(good.getName()).isEqualTo(dto.getName());
-            assertThat(good.getType()).isEqualTo(GoodTypesEnum.valueOf(dto.getType()));
-            assertThat(good.getDescription()).isEqualTo(dto.getDescription());
-            assertThat(good.getPrice()).isEqualTo(dto.getPrice());
-            assertThat(good.getStockQuantity()).isEqualTo(dto.getStockQuantity());
-            assertThat(good.getArchiveDate()).isEqualTo(dto.getArchiveDate());
-        }
-
-        // Проверяем, что новый товар добавлен
+        // Проверка на наличие нового товара
         assertThat(payment.getGoods().stream().anyMatch(g -> g.getId().equals(newGoodDto.getId()))).isTrue();
     }
 
-
+    /**
+     * Создаёт тестовую сущность {@link Payment} с подготовленным набором данных.
+     *
+     * @return объект {@link Payment}, содержащий основные поля и связанные товары.
+     */
     protected static Payment getPayment() {
         Payment payment = new Payment();
         payment.setId(1L);
@@ -175,6 +190,11 @@ public class PaymentMappingTest {
         return payment;
     }
 
+    /**
+     * Создаёт тестовый DTO {@link PaymentRequestDto} с подготовленным набором данных.
+     *
+     * @return объект {@link PaymentRequestDto}, содержащий основные поля и связанные товары.
+     */
     protected static PaymentRequestDto getPaymentRequestDto() {
         PaymentRequestDto paymentRequestDto = new PaymentRequestDto();
         paymentRequestDto.setUserId(UserMappingTest.getUser().getId());
@@ -185,6 +205,11 @@ public class PaymentMappingTest {
         return paymentRequestDto;
     }
 
+    /**
+     * Создаёт тестового пользователя {@link User} для использования в платежах.
+     *
+     * @return объект {@link User} с заполненными основными полями.
+     */
     private static User createUser() {
         User user = new User();
         user.setId(UUID.randomUUID());

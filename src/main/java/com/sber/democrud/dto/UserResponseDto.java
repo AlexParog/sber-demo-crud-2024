@@ -14,31 +14,59 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * DTO-ответа информации о пользователе {@link com.sber.democrud.entity.User}.
+ */
 @Getter
 @Setter
 public class UserResponseDto {
+
+    /**
+     * Уникальный идентификатор пользователя.
+     */
     private UUID id;
 
+    /**
+     * Имя пользователя.
+     */
     @NotBlank
     private String name;
 
+    /**
+     * Логин пользователя.
+     */
     @Size(max = 50, message = "Максимальная длина логина превышена < 50.")
     @NotBlank
     private String login;
 
+    /**
+     * Пароль пользователя.
+     */
     @JsonIgnore
     private String password;
 
+    /**
+     * Email пользователя.
+     */
     @NotBlank
     @Email
     private String email;
 
+    /**
+     * Роль пользователя.
+     */
     @NotNull
     private String role;
 
+    /**
+     * Дата архивации пользователя.
+     */
     @Nullable
     private LocalDateTime archiveDate;
 
+    /**
+     * Список платежей, связанных с пользователем.
+     */
     @Nullable
     private Set<PaymentResponseDto> payments = new HashSet<>();
 }

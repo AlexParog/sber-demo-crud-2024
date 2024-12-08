@@ -2,12 +2,16 @@ package com.sber.democrud.mapper;
 
 import com.sber.democrud.dto.UserRequestDto;
 import com.sber.democrud.dto.UserResponseDto;
+import com.sber.democrud.entity.Good;
 import com.sber.democrud.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
 
+/**
+ * Маппер для преобразования между сущностью {@link User} и DTO объектами.
+ */
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = {PaymentMapper.class})
 public interface UserMapper {
     /**

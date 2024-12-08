@@ -15,53 +15,91 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Тестовый класс для проверки маппинга между сущностью {@link User}, пользовательскими DTO и обратного преобразования.
+ * Тестируется функциональность маппера {@link UserMapper}, включая:
+ * <ul>
+ *     <li>Маппинг сущности {@link User} в {@link UserResponseDto}</li>
+ *     <li>Маппинг {@link UserRequestDto} в сущность {@link User}</li>
+ *     <li>Обновление сущности {@link User} из {@link UserRequestDto}</li>
+ * </ul>
+ */
 @SpringBootTest
 public class UserMappingTest {
+
+    /**
+     * Автоматически внедряемый биновый компонент маппера {@link UserMapper}.
+     */
     @Autowired
     private UserMapper userMapper;
 
+    /**
+     * Тестирует маппинг сущности {@link User} в объект {@link UserResponseDto}.
+     * <p>
+     * Проверяет корректность отображения обязательных и вложенных полей, а также игнорирование полей,
+     * которые не должны быть перенесены.
+     */
     @Test
     void userToUserResponseDtoTest() {
         User user = getUser();
 
         UserResponseDto userResponseDto = userMapper.toUserResponseDto(user);
 
+        // Проверка на null
         assertThat(userResponseDto).isNotNull();
-        // обязательные поля при маппинге
+
+        // Проверка маппинга обязательных полей
         assertThat(userResponseDto.getId()).isEqualTo(user.getId());
         assertThat(userResponseDto.getName()).isEqualTo(user.getName());
         assertThat(userResponseDto.getLogin()).isEqualTo(user.getLogin());
         assertThat(userResponseDto.getEmail()).isEqualTo(user.getEmail());
         assertThat(userResponseDto.getRole()).isEqualTo(user.getRole().getValue());
         assertThat(userResponseDto.getArchiveDate()).isEqualTo(user.getArchiveDate());
-        // игнорируемые поля
+
+        // Поле password должно быть исключено из маппинга
         assertThat(userResponseDto.getPassword()).isNotEqualTo(user.getPassword());
-        // вложенное поле payments
+
+        // Проверка вложенного поля payments
         assertThat(userResponseDto.getPayments()).isNotEmpty();
         assertThat(userResponseDto.getPayments().size()).isEqualTo(user.getPayments().size());
     }
 
+    /**
+     * Тестирует маппинг объекта {@link UserRequestDto} в сущность {@link User}.
+     * <p>
+     * Проверяет правильность переноса обязательных полей и игнорирование технических полей, которые
+     * не могут быть заполнены в процессе создания.
+     */
     @Test
     void userRequestDtoToUserTest() {
         UserRequestDto userRequestDto = getUserRequestDto();
 
         User user = userMapper.toUser(userRequestDto);
 
+        // Проверка на null
         assertThat(user).isNotNull();
-        // обязательные поля при маппинге
+
+        // Проверка маппинга обязательных полей
         assertThat(user.getName()).isEqualTo(userRequestDto.getName());
         assertThat(user.getLogin()).isEqualTo(userRequestDto.getLogin());
         assertThat(user.getPassword()).isEqualTo(userRequestDto.getPassword());
         assertThat(user.getEmail()).isEqualTo(userRequestDto.getEmail());
         assertThat(user.getRole()).isEqualTo(UserRolesEnum.valueOf(userRequestDto.getRole()));
         assertThat(user.getArchiveDate()).isEqualTo(userRequestDto.getArchiveDate());
-        // игнорируемые поля
+
+        // Проверка игнорируемых полей
         assertThat(user.getId()).isNull();
         assertThat(user.getCreatedAt()).isNull();
         assertThat(user.getUpdatedAt()).isNull();
         assertThat(user.getPayments()).isEmpty();
     }
 
+    /**
+     * Тестирует обновление существующей сущности {@link User} на основе данных из {@link UserRequestDto}.
+     * <p>
+     * Проверяет корректность переноса обязательных данных и отсутствие изменений в связанных данных, которые
+     * не должны подвергаться маппингу (список платежей).
+     */
     @Test
     void updateUserFromUserRequestDtoTest() {
         User user = getUser();
@@ -70,23 +108,30 @@ public class UserMappingTest {
 
         userMapper.updateUserFromDto(userRequestDto, user);
 
+        // Проверка на null
         assertThat(user).isNotNull();
-        // обязательные поля
+
+        // Проверка маппинга обязательных полей
         assertThat(user.getName()).isEqualTo(userRequestDto.getName());
         assertThat(user.getLogin()).isEqualTo(userRequestDto.getLogin());
         assertThat(user.getPassword()).isEqualTo(userRequestDto.getPassword());
         assertThat(user.getEmail()).isEqualTo(userRequestDto.getEmail());
         assertThat(user.getRole()).isEqualTo(UserRolesEnum.valueOf(userRequestDto.getRole()));
         assertThat(user.getArchiveDate()).isEqualTo(userRequestDto.getArchiveDate());
-        // игнорируемые поля
+
+        // Проверка сохранения связанных полей
         assertThat(user.getId()).isNotNull();
         assertThat(user.getCreatedAt()).isNull();
         assertThat(user.getUpdatedAt()).isNull();
-        // вложенное поле payments
         assertThat(user.getPayments()).isNotEmpty();
         assertThat(user.getPayments().size()).isEqualTo(preMappingSizePayments);
     }
 
+    /**
+     * Создаёт тестовый объект пользователя {@link User} с подготовленным набором данных.
+     *
+     * @return объект {@link User}, содержащий основные поля и связанные записи (платежи).
+     */
     protected static User getUser() {
         User user = new User();
         user.setId(UUID.randomUUID());
@@ -99,14 +144,13 @@ public class UserMappingTest {
 
         Set<Payment> payments = new HashSet<>();
 
-        // Первый платеж с двумя товарами
+        // Первый платёж с двумя товарами
         Payment payment1 = new Payment();
         payment1.setId(1L);
         payment1.setUser(user);
         payment1.setTotalPurchaseAmount(new BigDecimal("50.99"));
         payment1.setArchiveDate(null);
 
-        // Создаем два товара
         Set<Good> goodsForPayment1 = new HashSet<>();
         Good good1 = new Good();
         good1.setId(1L);
@@ -130,14 +174,13 @@ public class UserMappingTest {
         goodsForPayment1.add(good2);
         payment1.setGoods(goodsForPayment1);
 
-        // Второй платеж с одним товаром
+        // Второй платёж с одним товаром
         Payment payment2 = new Payment();
         payment2.setId(2L);
         payment2.setUser(user);
         payment2.setTotalPurchaseAmount(new BigDecimal("15.00"));
         payment2.setArchiveDate(null);
 
-        // Создаем один товар
         Set<Good> goodsForPayment2 = new HashSet<>();
         Good good3 = new Good();
         good3.setId(3L);
@@ -151,7 +194,6 @@ public class UserMappingTest {
         goodsForPayment2.add(good3);
         payment2.setGoods(goodsForPayment2);
 
-        // Добавляем платежи в множество
         payments.add(payment1);
         payments.add(payment2);
         user.setPayments(payments);
@@ -159,6 +201,11 @@ public class UserMappingTest {
         return user;
     }
 
+    /**
+     * Создаёт тестовый DTO {@link UserRequestDto} для имитации входных данных.
+     *
+     * @return объект {@link UserRequestDto} с заполненными тестовыми данными.
+     */
     protected static UserRequestDto getUserRequestDto() {
         UserRequestDto userRequestDto = new UserRequestDto();
         userRequestDto.setName("Alex");
