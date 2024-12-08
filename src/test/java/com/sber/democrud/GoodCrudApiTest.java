@@ -199,7 +199,7 @@ public class GoodCrudApiTest {
      * @throws Exception если происходит ошибка при выполнении запроса
      */
     @Test
-    void testGetGoodById_NotFound() throws Exception {
+    void testGetGoodByIdNotFound() throws Exception {
         mockMvc.perform(get("/api/goods/{id}", 9999))
                 .andExpect(status().isNotFound());
     }
