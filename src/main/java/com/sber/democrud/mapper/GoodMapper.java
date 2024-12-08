@@ -28,6 +28,7 @@ public interface GoodMapper {
     @Mapping(target = "description", source = "description")
     @Mapping(target = "price", source = "price")
     @Mapping(target = "stockQuantity", source = "stockQuantity")
+    @Mapping(target = "archiveDate", source = "archiveDate")
     GoodResponseDto toGoodResponseDto(Good good);
 
     /**
@@ -37,7 +38,6 @@ public interface GoodMapper {
      * @return объект сущности товара.
      */
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "archiveDate", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "goodsInPayments", ignore = true)
@@ -50,7 +50,6 @@ public interface GoodMapper {
      * @param good           объект товара, который необходимо обновить.
      */
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "archiveDate", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "goodsInPayments", ignore = true)

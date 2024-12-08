@@ -53,9 +53,9 @@ public class GoodsMappingTest {
         assertThat(good.getDescription()).isEqualTo(goodRequestDto.getDescription());
         assertThat(good.getPrice()).isEqualTo(goodRequestDto.getPrice());
         assertThat(good.getStockQuantity()).isEqualTo(goodRequestDto.getStockQuantity());
+        assertThat(good.getArchiveDate()).isEqualTo(goodRequestDto.getArchiveDate());
         // игнорируемые поля
         assertThat(good.getId()).isNull();
-        assertThat(good.getArchiveDate()).isNull();
         assertThat(good.getCreatedAt()).isNull();
         assertThat(good.getUpdatedAt()).isNull();
         assertThat(good.getGoodsInPayments()).isEmpty();
@@ -75,10 +75,10 @@ public class GoodsMappingTest {
         assertThat(good.getDescription()).isEqualTo(goodRequestDto.getDescription());
         assertThat(good.getPrice()).isEqualTo(goodRequestDto.getPrice());
         assertThat(good.getStockQuantity()).isEqualTo(goodRequestDto.getStockQuantity());
+        assertThat(good.getArchiveDate()).isEqualTo(goodRequestDto.getArchiveDate());
         // поля, которые были заполнены до маппинга
         assertThat(good.getId()).isNotNull();
         // игнорируемые поля
-        assertThat(good.getArchiveDate()).isNull();
         assertThat(good.getCreatedAt()).isNull();
         assertThat(good.getUpdatedAt()).isNull();
         assertThat(good.getGoodsInPayments()).isEmpty();
@@ -208,6 +208,7 @@ public class GoodsMappingTest {
         goodRequestDto.setDescription("Java Effective");
         goodRequestDto.setPrice(new BigDecimal("20.99"));
         goodRequestDto.setStockQuantity(5L);
+        goodRequestDto.setArchiveDate(null);
         return goodRequestDto;
     }
 }

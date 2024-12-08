@@ -1,10 +1,12 @@
 package com.sber.democrud.dto;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * DTO для создания и обновления информации о товаре.
@@ -45,5 +47,11 @@ public class GoodRequestDto {
     @NotNull
     @PositiveOrZero(message = "Количество на складе должно быть равно нулю или больше")
     private Long stockQuantity;
+
+    /**
+     * Дата архивации товара.
+     */
+    @Nullable
+    private LocalDateTime archiveDate;
 }
 
