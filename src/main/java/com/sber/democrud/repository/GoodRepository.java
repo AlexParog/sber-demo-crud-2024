@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * JPA Репозиторий для работы с сущностью {@link Good}.
@@ -19,5 +20,7 @@ public interface GoodRepository extends JpaRepository<Good, Long> {
      * @return список архивированных товаров.
      */
     List<Good> findByArchiveDateIsNotNull();
+
+    Optional<Good> findByName(String name);
 }
 
