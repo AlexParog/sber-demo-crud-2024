@@ -3,9 +3,7 @@ package com.sber.democrud.mappings;
 import com.sber.democrud.dto.GoodResponseDto;
 import com.sber.democrud.dto.PaymentRequestDto;
 import com.sber.democrud.dto.PaymentResponseDto;
-import com.sber.democrud.entity.Good;
-import com.sber.democrud.entity.GoodTypesEnum;
-import com.sber.democrud.entity.Payment;
+import com.sber.democrud.entity.*;
 import com.sber.democrud.mapper.PaymentMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -168,7 +167,7 @@ public class PaymentMappingTest {
     protected static Payment getPayment() {
         Payment payment = new Payment();
         payment.setId(1L);
-        payment.setUser(UserMappingTest.getUser());
+        payment.setUser(createUser());
         payment.setTotalPurchaseAmount(new BigDecimal("50.99"));
         payment.setArchiveDate(null);
         payment.setGoods(GoodsMappingTest.getSetGoods());
@@ -184,5 +183,18 @@ public class PaymentMappingTest {
         paymentRequestDto.setGoods(GoodsMappingTest.getSetGoodResponseDtos());
 
         return paymentRequestDto;
+    }
+
+    private static User createUser() {
+        User user = new User();
+        user.setId(UUID.randomUUID());
+        user.setName("Vlad");
+        user.setLogin("vladevo");
+        user.setPassword("evelon");
+        user.setEmail("vladevo@gmail.com");
+        user.setRole(UserRolesEnum.USER);
+        user.setArchiveDate(null);
+
+        return user;
     }
 }
