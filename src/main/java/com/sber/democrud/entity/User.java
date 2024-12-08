@@ -58,6 +58,7 @@ public class User {
      * Пароль пользователя.
      */
     @ToString.Exclude
+    @NotBlank
     @Size(min = 5, message = "Минимальная длина пароля не соблюдена > 5.")
     @Column(name = "password", nullable = false)
     private String password;
@@ -89,7 +90,7 @@ public class User {
      * Дата создания записи о пользователе.
      */
     @CreatedDate
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     /**

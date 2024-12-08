@@ -58,7 +58,7 @@ public class Payment {
      * Дата создания записи о платеже.
      */
     @CreatedDate
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     /**
