@@ -9,6 +9,8 @@ import com.sber.democrud.mapper.PaymentMapper;
 import com.sber.democrud.mapper.UserMapper;
 import com.sber.democrud.repository.UserRepository;
 import com.sber.democrud.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,6 +23,10 @@ import java.util.stream.Collectors;
  */
 @Service
 public class UserServiceImpl implements UserService {
+    /**
+     * Логгер.
+     */
+    private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.class);
 
     /**
      * Репозиторий пользователей.
@@ -59,9 +65,14 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
+        log.info("Создание пользователя: {}", userRequestDto);
+
         User user = userMapper.toUser(userRequestDto);
         userRepository.save(user);
-        return userMapper.toUserResponseDto(user);
+
+        UserResponseDto responseDto = userMapper.toUserResponseDto(user);
+        log.info("Пользователь успешно создан с ID: {}", responseDto.getId());
+        return responseDto;
     }
 
     /**
@@ -75,17 +86,21 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserResponseDto getUserById(UUID id, boolean includePayments) {
-        User user = findUserOrNotFound(id);
+        log.info("Получение пользователя с ID: {}, includePayments: {}", id, includePayments);
 
-        UserResponseDto userResponseDto = userMapper.toUserResponseDto(user);
+        User user = findUserOrNotFound(id);
+        log.debug("Пользователь найден: {}", user);
+
+        UserResponseDto responseDto = userMapper.toUserResponseDto(user);
         if (includePayments) {
+            log.debug("Добавление связанных платежей в ответ");
             Set<PaymentResponseDto> paymentDtos = user.getPayments().stream()
                     .map(paymentMapper::toPaymentResponseDto)
                     .collect(Collectors.toSet());
-            userResponseDto.setPayments(paymentDtos);
+            responseDto.setPayments(paymentDtos);
         }
 
-        return userResponseDto;
+        return responseDto;
     }
 
     /**
@@ -98,9 +113,14 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserResponseDto updateUserById(UUID id, UserRequestDto userRequestDto) {
+        log.info("Обновление пользователя с ID: {} данными: {}", id, userRequestDto);
+
         User currentUser = findUserOrNotFound(id);
         userMapper.updateUserFromDto(userRequestDto, currentUser);
+
         userRepository.save(currentUser);
+        log.info("Пользователь с ID: {} успешно обновлен", id);
+
         return userMapper.toUserResponseDto(currentUser);
     }
 
@@ -113,13 +133,18 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserResponseDto archiveUserById(UUID id) {
+        log.info("Архивирование пользователя с ID: {}", id);
+
         User user = findUserOrNotFound(id);
 
-        // Разрываем связь с платежами
-        user.getPayments().forEach(user::removePayment);
+        // Разрываем связь с платежами, приводят к ConcurrentModificationException
+//        Set<Payment> userPayments = user.getPayments();
+//        userPayments.forEach(user::removePayment);
 
         user.setArchiveDate(LocalDateTime.now());
         userRepository.save(user);
+
+        log.info("Пользователь с ID: {} успешно архивирован на дату: {}", id, user.getArchiveDate());
         return userMapper.toUserResponseDto(user);
     }
 
@@ -131,7 +156,12 @@ public class UserServiceImpl implements UserService {
      * @return найденный {@link User}.
      */
     private User findUserOrNotFound(UUID id) {
+        log.debug("Поиск пользователя с ID: {}", id);
+
         return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id={0} не найден", id));
+                .orElseThrow(() -> {
+                    log.error("Пользователь с ID: {} не найден", id);
+                    return new NotFoundException("Пользователь с id={0} не найден", id);
+                });
     }
 }

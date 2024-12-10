@@ -9,6 +9,8 @@ import com.sber.democrud.mapper.PaymentMapper;
 import com.sber.democrud.repository.PaymentRepository;
 import com.sber.democrud.repository.UserRepository;
 import com.sber.democrud.service.PaymentService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,6 +20,10 @@ import java.time.LocalDateTime;
  */
 @Service
 public class PaymentServiceImpl implements PaymentService {
+    /**
+     * Логгер.
+     */
+    private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.class);
 
     /**
      * Репозиторий платежей.
@@ -56,24 +62,32 @@ public class PaymentServiceImpl implements PaymentService {
      */
     @Override
     public PaymentResponseDto createPayment(PaymentRequestDto paymentRequestDto) {
+        log.info("Создание платежа: {}", paymentRequestDto);
+
         Payment payment = paymentMapper.toPayment(paymentRequestDto);
 
         // Находим пользователя, связанного с платежом
         User userPayment = userRepository.findById(paymentRequestDto.getUserId())
-                .orElseThrow(() ->
-                        new NotFoundException("Пользователь c id={0} не найден", paymentRequestDto.getUserId()));
+                .orElseThrow(() -> {
+                    log.error("Пользователь с ID: {} не найден", paymentRequestDto.getUserId());
+                    return new NotFoundException("Пользователь с id={0} не найден", paymentRequestDto.getUserId());
+                });
+        log.debug("Пользователь найден: {}", userPayment);
         payment.setUser(userPayment);
 
-        // Устанавливаем связь между пользователем и платежом
-        userPayment.addPayment(payment);
-
-        // Связываем товары с платежом
-        payment.getGoods().forEach(payment::addGood);
+//        // Устанавливаем связь между пользователем и платежом, приводят к ConcurrentModificationException
+//        userPayment.addPayment(payment);
+//
+//        // Связываем товары с платежом
+//        Set<Good> goodsInPayment = payment.getGoods();
+//        goodsInPayment.forEach(payment::addGood);
 
         // Сохраняем платёж
         paymentRepository.save(payment);
 
-        return paymentMapper.toPaymentResponseDto(payment);
+        PaymentResponseDto responseDto = paymentMapper.toPaymentResponseDto(payment);
+        log.info("Платеж успешно создан с ID: {}", responseDto.getId());
+        return responseDto;
     }
 
     /**
@@ -85,12 +99,17 @@ public class PaymentServiceImpl implements PaymentService {
      */
     @Override
     public PaymentResponseDto getPaymentById(Long id) {
+        log.info("Получение платежа с ID: {}", id);
+
         Payment payment = findPaymentOrNotFound(id);
+        log.debug("Платеж найден: {}", payment);
+
         return paymentMapper.toPaymentResponseDto(payment);
     }
 
     /**
      * Обновляет существующий платёж по идентификатору.
+     * Кроме пользователя, так как в совершенной покупке нельзя поменять данные того, кто произвел оплату.
      *
      * @param id                идентификатор платежа.
      * @param paymentRequestDto DTO с новыми данными для платежа.
@@ -99,9 +118,13 @@ public class PaymentServiceImpl implements PaymentService {
      */
     @Override
     public PaymentResponseDto updatePaymentById(Long id, PaymentRequestDto paymentRequestDto) {
+        log.info("Обновление платежа с ID: {} данными: {}", id, paymentRequestDto);
+
         Payment currentPayment = findPaymentOrNotFound(id);
         paymentMapper.updatePaymentFromDto(paymentRequestDto, currentPayment);
+
         paymentRepository.save(currentPayment);
+        log.info("Платеж с ID: {} успешно обновлен", id);
 
         return paymentMapper.toPaymentResponseDto(currentPayment);
     }
@@ -115,14 +138,18 @@ public class PaymentServiceImpl implements PaymentService {
      */
     @Override
     public PaymentResponseDto archivePaymentById(Long id) {
+        log.info("Архивирование платежа с ID: {}", id);
+
         Payment payment = findPaymentOrNotFound(id);
 
-        // Разрываем связь между платежом и товарами
-        payment.getGoods().forEach(payment::removeGood);
+        // Разрываем связь между платежом и товарами, приводят к ConcurrentModificationException
+//        Set<Good> goodsInPayment = payment.getGoods();
+//        goodsInPayment.forEach(payment::removeGood);
 
         payment.setArchiveDate(LocalDateTime.now());
         paymentRepository.save(payment);
 
+        log.info("Платеж с ID: {} успешно архивирован на дату: {}", id, payment.getArchiveDate());
         return paymentMapper.toPaymentResponseDto(payment);
     }
 
@@ -134,7 +161,12 @@ public class PaymentServiceImpl implements PaymentService {
      * @throws NotFoundException, если платёж не найден.
      */
     private Payment findPaymentOrNotFound(Long id) {
+        log.debug("Поиск платежа с ID: {}", id);
+
         return paymentRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Платёж c id={0} не найден", id));
+                .orElseThrow(() -> {
+                    log.error("Платеж с ID: {} не найден", id);
+                    return new NotFoundException("Платеж c id={0} не найден", id);
+                });
     }
 }

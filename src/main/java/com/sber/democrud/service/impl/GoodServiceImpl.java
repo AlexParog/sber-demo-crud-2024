@@ -7,6 +7,8 @@ import com.sber.democrud.exception.NotFoundException;
 import com.sber.democrud.mapper.GoodMapper;
 import com.sber.democrud.repository.GoodRepository;
 import com.sber.democrud.service.GoodService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,6 +20,10 @@ import java.time.LocalDateTime;
  */
 @Service
 public class GoodServiceImpl implements GoodService {
+    /**
+     * Логгер.
+     */
+    private static final Logger log = LoggerFactory.getLogger(GoodServiceImpl.class);
 
     /**
      * Репозиторий для работы с базой данных, соответствующий сущности {@link Good}.
@@ -50,10 +56,14 @@ public class GoodServiceImpl implements GoodService {
      */
     @Override
     public GoodResponseDto createGood(GoodRequestDto goodRequestDto) {
+        log.info("Создание товара: {}", goodRequestDto);
+
         Good good = goodMapper.toGood(goodRequestDto);
         goodRepository.save(good);
 
-        return goodMapper.toGoodResponseDto(good);
+        GoodResponseDto goodResponseDto = goodMapper.toGoodResponseDto(good);
+        log.info("Товар успешно создан с ID: {}", goodResponseDto.getId());
+        return goodResponseDto;
     }
 
     /**
@@ -66,7 +76,11 @@ public class GoodServiceImpl implements GoodService {
      */
     @Override
     public GoodResponseDto getGoodById(Long id) {
+        log.info("Получение товара с ID: {}", id);
+
         Good good = findGoodOrNotFound(id);
+        log.debug("Товар найден: {}", good);
+
         return goodMapper.toGoodResponseDto(good);
     }
 
@@ -81,9 +95,12 @@ public class GoodServiceImpl implements GoodService {
      */
     @Override
     public GoodResponseDto updateGoodById(Long id, GoodRequestDto goodRequestDto) {
+        log.info("Обновление товара с ID: {} данными: {}", id, goodRequestDto);
+
         Good existingGood = findGoodOrNotFound(id);
         goodMapper.updateGoodFromDto(goodRequestDto, existingGood);
         goodRepository.save(existingGood);
+        log.info("Товар с ID: {} успешно обновлен", id);
 
         return goodMapper.toGoodResponseDto(existingGood);
     }
@@ -97,10 +114,13 @@ public class GoodServiceImpl implements GoodService {
      */
     @Override
     public GoodResponseDto archiveGoodById(Long id) {
+        log.info("Архивирование товара с ID: {}", id);
+
         Good good = findGoodOrNotFound(id);
         good.setArchiveDate(LocalDateTime.now());
         goodRepository.save(good);
 
+        log.info("Товар с ID: {} успешно архивирован на дату: {}", id, good.getArchiveDate());
         return goodMapper.toGoodResponseDto(good);
     }
 
@@ -112,8 +132,13 @@ public class GoodServiceImpl implements GoodService {
      * @return объект {@link Good}, найденный в базе данных.
      */
     private Good findGoodOrNotFound(Long id) {
+        log.debug("Поиск товара с ID: {}", id);
+
         return goodRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Товар c id={0} не найден", id));
+                .orElseThrow(() -> {
+                    log.error("Товар с ID: {} не найден", id);
+                    return new NotFoundException("Товар c id={0} не найден", id);
+                });
     }
 }
 
