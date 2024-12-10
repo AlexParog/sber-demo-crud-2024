@@ -5,7 +5,7 @@
 Имитация онлайн-магазина. Пользователь может иметь множество платежей. Множеству платежей может принадлежать множество товаров.
 
 Стек: Java 17, Spring Boot 3.3.2 (Data JPA, Validation, Web, DevTools), Flyway (Core, PostgreSQL), 
-PostgreSQL (runtime, Testcontainers), MapStruct 1.5.5.Final, Lombok 1.18.36, SpringDoc OpenAPI 2.2.0, 
+PostgreSQL 15 (Testcontainers), MapStruct 1.5.5.Final, Lombok 1.18.36, SpringDoc OpenAPI 2.2.0, 
 Testcontainers 1.19.7, AssertJ 3.26.3.
 
 Не успел сделать интеграционные тесты для сущности Payment и User. Также добавить и настроить библиотеку Testcontainers.
