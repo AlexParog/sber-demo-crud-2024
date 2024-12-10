@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${spring.datasource.url}
+    username: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+
+  flyway:
+    enabled: true
+    url: ${spring.flyway.url}
+    user: ${spring.flyway.user}
+    password: ${spring.flyway.password}
