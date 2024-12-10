@@ -42,6 +42,7 @@ public interface PaymentMapper {
 
     /**
      * Обновляет существующий объект {@link Payment} на основе данных из {@link PaymentRequestDto}.
+     * Кроме пользователя, так как в совершенной покупке нельзя поменять данные того, кто произвел оплату.
      *
      * @param paymentRequestDto DTO с новыми данными покупки.
      * @param payment           объект покупки, который необходимо обновить.
