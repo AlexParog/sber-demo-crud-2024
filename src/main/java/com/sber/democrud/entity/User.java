@@ -104,7 +104,7 @@ public class User {
      * Список платежей, связанных с пользователем, связь "один-ко-многим".
      */
     @ToString.Exclude
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     protected Set<Payment> payments = new HashSet<>();
 
     /**

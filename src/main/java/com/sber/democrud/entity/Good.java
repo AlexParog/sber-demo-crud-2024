@@ -97,7 +97,7 @@ public class Good {
      * Список платежей, связанных с этим товаром.
      * Это связь "многие ко многим" с сущностью {@link Payment}.
      */
-    @ManyToMany(mappedBy = "goods")
+    @ManyToMany(mappedBy = "goods", fetch = FetchType.LAZY)
     protected Set<Payment> goodsInPayments = new HashSet<>();
 
     /**

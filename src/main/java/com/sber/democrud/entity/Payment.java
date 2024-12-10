@@ -83,9 +83,7 @@ public class Payment {
      */
     @ToString.Exclude
     @NotNull
-    @ManyToMany(cascade = {
-            CascadeType.MERGE,
-            CascadeType.PERSIST})
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     @JoinTable(name = "payment_goods",
             joinColumns = @JoinColumn(name = "payment_id"),
             inverseJoinColumns = @JoinColumn(name = "good_id"))
