@@ -1,4 +1,4 @@
-package com.sber.democrud;
+package com.sber.democrud.crud_api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sber.democrud.dto.GoodRequestDto;
@@ -33,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class GoodCrudApiTest {
+    private static final String PATH = "/api/goods";
     /**
      * Объект для тестирования REST API через HTTP-запросы.
      */
@@ -101,7 +102,7 @@ public class GoodCrudApiTest {
         goodRequest.setStockQuantity(1L);
         goodRequest.setArchiveDate(null);
 
-        mockMvc.perform(post("/api/goods")
+        mockMvc.perform(post(PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(goodRequest)))
                 .andExpect(status().isCreated())
@@ -135,7 +136,7 @@ public class GoodCrudApiTest {
      */
     @Test
     void testGetGoodById() throws Exception {
-        mockMvc.perform(get("/api/goods/{id}", testGood.getId()))
+        mockMvc.perform(get(PATH + "/{id}", testGood.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(testGood.getId()))
                 .andExpect(jsonPath("$.name").value(testGood.getName()))
@@ -160,7 +161,7 @@ public class GoodCrudApiTest {
         updatedGoodRequest.setStockQuantity(5L);
 
 
-        mockMvc.perform(put("/api/goods/{id}", testGood.getId())
+        mockMvc.perform(put(PATH + "/{id}", testGood.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedGoodRequest)))
                 .andExpect(status().isOk());
@@ -185,7 +186,7 @@ public class GoodCrudApiTest {
      */
     @Test
     void testArchiveGoodById() throws Exception {
-        mockMvc.perform(delete("/api/goods/archive/{id}", testGood.getId()))
+        mockMvc.perform(delete(PATH + "/archive/{id}", testGood.getId()))
                 .andExpect(status().isOk());
 
         // Проверяем, что поле archiveDate заполнено
@@ -200,7 +201,7 @@ public class GoodCrudApiTest {
      */
     @Test
     void testGetGoodByIdNotFound() throws Exception {
-        mockMvc.perform(get("/api/goods/{id}", 9999))
+        mockMvc.perform(get(PATH + "/{id}", 9999))
                 .andExpect(status().isNotFound());
     }
 }
